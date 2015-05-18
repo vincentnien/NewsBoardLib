@@ -23,7 +23,7 @@ public class MainActivity extends Activity {
             public void run() {
                 try {
                     NewsBoard.create(MainActivity.this)
-                            .withUrl("http://combomaster.twgogo.org/message/update-zh-TW.txt")
+                            .withUrl("https://raw.githubusercontent.com/vincentnien/NewsBoardLib/master/app/build.gradle")
                             .addPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
@@ -31,6 +31,7 @@ public class MainActivity extends Activity {
                                 }
                             })
                             .titleId(android.R.string.dialog_alert_title)
+                            .checkMethod(NewsBoard.CheckMethod.GITHUB_ETAG)
                             .run();
                 } catch(Exception e) {
                     Log.e(TAG, e.toString(), e);

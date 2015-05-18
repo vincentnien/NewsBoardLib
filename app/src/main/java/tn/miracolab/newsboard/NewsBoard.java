@@ -25,6 +25,7 @@ public class NewsBoard {
 
     public enum CheckMethod {
         LAST_MODIFIED,
+        GITHUB_ETAG,
         MD5
     }
 
@@ -131,13 +132,23 @@ public class NewsBoard {
         try {
             Activity ref = activity.get();
             SharedPreferences pref = ref.getSharedPreferences(SHARD_PREF, Context.MODE_PRIVATE);
-            String lastModifiedInPref = pref.getString("lastModified", "");
+            String lastdataInPref = pref.getString("lastModified", "");
 
+            URL urlObj = new URL(url);
+            URLConnection connection = urlObj.openConnection();
+            String fromHeader = null;
             if (method == CheckMethod.LAST_MODIFIED) {
-                URL urlObj = new URL(url);
-                URLConnection connection = urlObj.openConnection();
-                String lastModified = connection.getHeaderField("Last-Modified");
-                if (!lastModifiedInPref.equals(lastModified) ) {
+                fromHeader = "Last-Modified";
+            } else if ( method == CheckMethod.GITHUB_ETAG ) {
+                fromHeader = "ETag";
+            } else {
+                // not supported for now
+            }
+
+            if ( fromHeader != null ) {
+                String data = connection.getHeaderField(fromHeader);
+                if (!lastdataInPref.equals(data)) {
+                    Log.e(TAG, "" + data);
                     // only support text
                     StringBuilder sb = new StringBuilder();
                     BufferedReader in = null;
@@ -148,14 +159,12 @@ public class NewsBoard {
                         while ((inputLine = in.readLine()) != null)
                             sb.append(inputLine).append("\n");
                     } finally {
-                        if ( in != null ) {
+                        if (in != null) {
                             in.close();
                         }
                     }
-                    return NewsMessage.create(true, sb.toString(), lastModified);
+                    return NewsMessage.create(true, sb.toString(), data);
                 }
-            } else {
-                // not supported for now
             }
         } catch(IOException e) {
             Log.e(TAG, e.toString(), e);
