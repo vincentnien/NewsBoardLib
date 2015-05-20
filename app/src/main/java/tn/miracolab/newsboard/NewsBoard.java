@@ -108,23 +108,29 @@ public class NewsBoard {
             SharedPreferences pref = activity.get().getSharedPreferences(SHARD_PREF, Context.MODE_PRIVATE);
             pref.edit().putString("lastModified", msg.data).apply();
 
-            activity.get().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(activity.get());
-                    builder.setMessage(msg.message).setCancelable(true);
-                    if ( titleId != -1 ) {
-                        builder.setTitle(titleId);
+            if (!isEmpty(msg.message)) {
+                Log.d(TAG, "message is not empty");
+                Log.d(TAG, "message length is " + msg.message.length());
+                activity.get().runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(activity.get());
+                        builder.setMessage(msg.message).setCancelable(true);
+                        if (titleId != -1) {
+                            builder.setTitle(titleId);
+                        }
+                        if (negativeId != -1) {
+                            builder.setNegativeButton(negativeId, negativeClickListener);
+                        }
+                        if (positiveId != -1) {
+                            builder.setPositiveButton(positiveId, positiveClickListener);
+                        }
+                        builder.create().show();
                     }
-                    if ( negativeId != -1 ) {
-                        builder.setNegativeButton(negativeId, negativeClickListener);
-                    }
-                    if ( positiveId != -1 ) {
-                        builder.setPositiveButton(positiveId, positiveClickListener);
-                    }
-                    builder.create().show();
-                }
-            });
+                });
+            } else {
+                Log.d(TAG, "message is empty");
+            }
         }
     }
 
@@ -174,5 +180,10 @@ public class NewsBoard {
 
     public static NewsBoard create(Activity activity) {
         return new NewsBoard(activity);
+    }
+
+    private boolean isEmpty(String message) {
+        message = message.replace("\n", "");
+        return TextUtils.isEmpty(message);
     }
 }
